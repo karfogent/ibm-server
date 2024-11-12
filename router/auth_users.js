@@ -27,7 +27,6 @@ regd_users.post("/login", (req, res) => {
         return res.status(401).json({ message: "Invalid username or password" });
     }
 
-    // Generate JWT token if authentication is successful
     const token = jwt.sign({ username }, "fingerprint_customer", { expiresIn: '1h' });
     return res.status(200).json({ message: "Login successful", token });
 });
@@ -35,26 +34,24 @@ regd_users.post("/login", (req, res) => {
 // Add or update a book review
 regd_users.put("/auth/review/:isbn", (req, res) => {
     const { isbn } = req.params;
-    const review = req.query.review;  // Extracting review from query parameter
+    const review = req.query.review;  
     const token = req.headers['authorization'];
 
     if (!token) {
         return res.status(401).json({ message: "Access denied. No token provided." });
     }
 
-    // Verify JWT token
     jwt.verify(token, "fingerprint_customer", (err, decoded) => {
         if (err) {
             return res.status(401).json({ message: "Invalid token." });
         }
 
-        const username = decoded.username;  // Get the username from decoded token
+        const username = decoded.username;  
 
         if (!books[isbn]) {
             return res.status(404).json({ message: "Book not found" });
         }
 
-        // Add or update the review by this user for the specified ISBN
         books[isbn].reviews = books[isbn].reviews || {};
         books[isbn].reviews[username] = review;
 
@@ -70,7 +67,6 @@ regd_users.delete("/auth/review/:isbn", (req, res) => {
         return res.status(401).json({ message: "Access denied. No token provided." });
     }
 
-    // Verify JWT token
     jwt.verify(token, "fingerprint_customer", (err, decoded) => {
         if (err) {
             return res.status(401).json({ message: "Invalid token." });
@@ -85,7 +81,6 @@ regd_users.delete("/auth/review/:isbn", (req, res) => {
             return res.status(404).json({ message: "Review not found" });
         }
 
-        // Delete the review by the user
         delete books[isbn].reviews[username];
         return res.status(200).json({ message: "Review deleted successfully", reviews: books[isbn].reviews });
     });

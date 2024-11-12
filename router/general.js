@@ -12,8 +12,57 @@ async function getBooks() {
       throw new Error("Books data not available");
     }
 };
+
+async function getBookByISBN(isbn) {
+    const book = books[isbn];
+    if (book) {
+      return book;
+    } else {
+      throw new Error("Book not found");
+    }
+}
+
+async function getBooksByAuthor(author) {
+    const filteredBooks = Object.values(books).filter(
+        book => book.author === author);
+    if (filteredBooks.length > 0) {
+      return filteredBooks;
+    } else {
+      throw new Error("No books found by this author");
+    }
+}
+
+async function getBooksByTitle(title) {
+    const filteredBooks = Object.values(books).filter(
+        book => book.title === title);
+    if (filteredBooks.length > 0) {
+      return filteredBooks;
+    } else {
+      throw new Error("No books found with this title");
+    }
+}
   
-  // Get the list of books available in the shop
+public_users.get('/title/:title', async (req, res) => {
+    const { title } = req.params;
+    try {
+      const booksByTitle = await getBooksByTitle(title);
+      res.send(booksByTitle); 
+    } catch (error) {
+      res.status(404).send({ message: error.message }); 
+    }
+});
+  
+public_users.get('/author/:author', async (req, res) => {
+    const { author } = req.params;
+    try {
+      const booksByAuthor = await getBooksByAuthor(author);
+      res.send(booksByAuthor); 
+    } catch (error) {
+      res.status(404).send({ message: error.message }); 
+    }
+});
+
+// Get the list of books available in the shop
 public_users.get('/', async (req, res) => {
     try {
       const booksList = await getBooks();
@@ -22,6 +71,17 @@ public_users.get('/', async (req, res) => {
       res.status(500).send({ message: error.message }); 
     }
 });
+  
+public_users.get('/isbn/:isbn', async (req, res) => {
+    const { isbn } = req.params;
+    try {
+      const book = await getBookByISBN(isbn);
+      res.send(book); 
+    } catch (error) {
+      res.status(404).send({ message: error.message }); 
+    }
+});
+
 // Register a new user
 public_users.post("/register", (req, res) => {
   const { username, password } = req.body;
